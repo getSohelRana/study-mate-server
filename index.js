@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -44,7 +44,15 @@ async function run() {
       res.send(result);
     });
 
-    
+    //FIND : specific student
+
+    app.get('/students/:id', async ( req , res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await studentsCollection.findOne(query);
+      res.send(result)
+    })
+
     // POST: add new student
    
     app.post("/students", async (req, res) => {
@@ -53,6 +61,30 @@ async function run() {
       res.send(result);
     });
 
+    //DELETE: delete student api
+    app.delete('/students/:id' , async(req , res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await studentsCollection.deleteOne(query);
+      res.send(result)
+    })
+
+    // UPDATE : update student api
+    app.patch('/students/:id' , async(req , res)=> {
+      const id = req.params.id;
+      const updatedStudent = req.body;
+      const query = {_id: new ObjectId(id)}
+      const update = {
+        $set :{
+          subject : updatedStudent.subject,
+          studyMode : updatedStudent.studyMode,
+          availabilityTime : updatedStudent.availabilityTime
+          //some key & value goes here
+        }
+      }
+      const result = await studentsCollection.updateOne(query  , update)
+      res.send(result)
+    })
     // MongoDB connection check
     await client.db("admin").command({ ping: 1 });
     console.log("Connected to MongoDB successfully!");
