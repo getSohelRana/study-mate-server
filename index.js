@@ -34,27 +34,69 @@ async function run() {
 
     const db = client.db("studyMate_db");
     const studentsCollection = db.collection("students");
+    const usersCollection = db.collection("users");
 
-    
-    // GET: all students 
-    
-    app.get("/students", async (req, res) => {
-      const cursor = studentsCollection.find();
+    // Create : add users
+    app.post("/users", async (req, res) => {
+      const newUsers = req.body;
+
+      //check duplicate email
+      const email = req.body.email;
+      const query = { email: email };
+      const existingUser = await usersCollection.findOne(query);
+      if (existingUser) {
+        res.send({ message: "user already registed!" });
+      } else {
+        const result = await usersCollection.insertOne(newUsers);
+        res.send(result);
+      }
+    });
+
+    //GET : get all users
+    app.get("/users", async (req, res) => {
+      const cursor = usersCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
 
-    //FIND : specific student
+    // GET: all students
 
-    app.get('/students/:id', async ( req , res) => {
-      const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
-      const result = await studentsCollection.findOne(query);
+    app.get("/students", async (req, res) => {
+      // console.log(req.query)
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.email = email;
+      }
+      const cursor = studentsCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // GET : top rated students
+    app.get('/top-rated-students' , async(req , res) => {
+      // const email = req.query.email;
+      // const query = {}
+      // if(email) {
+      //   query.email = email
+      // }
+      const projectFields = {name : 1, profileimage: 1, subject : 1, experienceLevel: 1, rating: 1}
+      const cursor = studentsCollection.find().sort({rating: -1}).limit(3).project(projectFields);
+      const result = await cursor.toArray();
       res.send(result)
     })
 
+    //FIND : specific student
+
+    app.get("/students/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await studentsCollection.findOne(query);
+      res.send(result);
+    });
+
     // POST: add new student
-   
+
     app.post("/students", async (req, res) => {
       const newStudent = req.body;
       const result = await studentsCollection.insertOne(newStudent);
@@ -62,29 +104,29 @@ async function run() {
     });
 
     //DELETE: delete student api
-    app.delete('/students/:id' , async(req , res) => {
+    app.delete("/students/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await studentsCollection.deleteOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     // UPDATE : update student api
-    app.patch('/students/:id' , async(req , res)=> {
+    app.patch("/students/:id", async (req, res) => {
       const id = req.params.id;
       const updatedStudent = req.body;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
       const update = {
-        $set :{
-          subject : updatedStudent.subject,
-          studyMode : updatedStudent.studyMode,
-          availabilityTime : updatedStudent.availabilityTime
+        $set: {
+          subject: updatedStudent.subject,
+          studyMode: updatedStudent.studyMode,
+          availabilityTime: updatedStudent.availabilityTime,
           //some key & value goes here
-        }
-      }
-      const result = await studentsCollection.updateOne(query  , update)
-      res.send(result)
-    })
+        },
+      };
+      const result = await studentsCollection.updateOne(query, update);
+      res.send(result);
+    });
     // MongoDB connection check
     await client.db("admin").command({ ping: 1 });
     console.log("Connected to MongoDB successfully!");
