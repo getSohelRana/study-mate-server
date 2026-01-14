@@ -35,6 +35,7 @@ async function run() {
     const db = client.db("studyMate_db");
     const studentsCollection = db.collection("students");
     const usersCollection = db.collection("users");
+    const partnerCountCollection = db.collection("partnerCounts");
 
     // Create : add users
     app.post("/users", async (req, res) => {
@@ -45,7 +46,7 @@ async function run() {
       const query = { email: email };
       const existingUser = await usersCollection.findOne(query);
       if (existingUser) {
-        res.send({ message: "user already registed!" });
+        res.send({ message: "user already registered!" });
       } else {
         const result = await usersCollection.insertOne(newUsers);
         res.send(result);
@@ -74,17 +75,27 @@ async function run() {
     });
 
     // GET : top rated students
-    app.get('/top-rated-students' , async(req , res) => {
+    app.get("/top-rated-students", async (req, res) => {
       // const email = req.query.email;
       // const query = {}
       // if(email) {
       //   query.email = email
       // }
-      const projectFields = {name : 1, profileimage: 1, subject : 1, experienceLevel: 1, rating: 1}
-      const cursor = studentsCollection.find().sort({rating: -1}).limit(3).project(projectFields);
+      const projectFields = {
+        name: 1,
+        profileimage: 1,
+        subject: 1,
+        experienceLevel: 1,
+        rating: 1,
+      };
+      const cursor = studentsCollection
+        .find()
+        .sort({ rating: -1 })
+        .limit(4)
+        .project(projectFields);
       const result = await cursor.toArray();
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     //FIND : specific student
 
@@ -100,6 +111,21 @@ async function run() {
     app.post("/students", async (req, res) => {
       const newStudent = req.body;
       const result = await studentsCollection.insertOne(newStudent);
+      res.send(result);
+    });
+
+    // POST: add partner counts
+
+    app.post("/partnerCounts", async (req, res) => {
+      const newPartnerCounts = req.body;
+      const result = await partnerCountCollection.insertOne(newPartnerCounts);
+      res.send(result);
+    });
+
+    // Get : get partner
+    app.get("/partnerCounts", async (req, res) => {
+      const email = req.query.email
+      const result = await partnerCountCollection.find().toArray();
       res.send(result);
     });
 
