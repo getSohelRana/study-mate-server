@@ -124,8 +124,21 @@ async function run() {
 
     // Get : get partner
     app.get("/partnerCounts", async (req, res) => {
-      const email = req.query.email
+      const email = req.query.email;
       const result = await partnerCountCollection.find().toArray();
+      res.send(result);
+    });
+
+    // COUNT : increment partner count
+    app.patch("/partnerCounts/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $inc: { patnerCount: 1 },
+      };
+
+      const result = await studentsCollection.updateOne(query, update);
       res.send(result);
     });
 
