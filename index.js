@@ -117,8 +117,36 @@ async function run() {
     // POST: add partner counts
 
     app.post("/partnerCounts", async (req, res) => {
-      const newPartnerCounts = req.body;
-      const result = await partnerCountCollection.insertOne(newPartnerCounts);
+      const {
+        partnerId,
+        partnerEmail,
+        partnerName,
+        partnerPhoto,
+        partnerSubject,
+        partnerStudyMode,
+        requested_by,
+      } = req.body;
+
+      const alreadySent = await partnerCountCollection.findOne({
+        partnerId,
+        requested_by,
+      });
+
+      if (alreadySent) {
+        return res.send({ message: "already_sent" });
+      }
+
+      const result = await partnerCountCollection.insertOne({
+        partnerId,
+        partnerEmail,
+        partnerName,
+        partnerPhoto,
+        partnerSubject,
+        partnerStudyMode,
+        requested_by,
+        createdAt: new Date(),
+      });
+
       res.send(result);
     });
 
