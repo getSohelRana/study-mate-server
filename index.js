@@ -170,6 +170,24 @@ async function run() {
       res.send(result);
     });
 
+    // SEARCH: search by subject name api
+    app.get("/search", async (req, res) => {
+      try {
+        const search_text = req.query.search;
+
+        const result = await studentsCollection
+          .find({
+            subject: { $regex: search_text, $options: "i" }, // i = case-insensitive
+          })
+          .toArray();
+
+        res.send(result);
+        // console.log(search_text)
+      } catch (error) {
+        res.status(500).send({ message: "Search failed", error });
+      }
+    });
+
     //DELETE: delete student api
     app.delete("/students/:id", async (req, res) => {
       const id = req.params.id;
