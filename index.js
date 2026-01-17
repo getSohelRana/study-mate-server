@@ -197,7 +197,7 @@ async function run() {
         .aggregate([
           {
             $addFields: {
-              // Numeric হলে 그대로 রাখবে, String হলে rank assign করবে
+              
               expRank: {
                 $switch: {
                   branches: [
@@ -226,6 +226,18 @@ async function run() {
       res.send(result);
     });
 
+    // FILTER : 
+    app.get("/filter" , async (req , res) => {
+      const experienceLevel = req.query.experienceLevel;
+      let query = {}
+      if(experienceLevel){
+        query = {experienceLevel} // empty value value & selected value
+        // query = {experienceLevel : experienceLevel} //just value
+      }
+      const result = await studentsCollection.find(query).toArray();
+      res.send(result)
+    })
+    
     //DELETE: delete student api
     app.delete("/students/:id", async (req, res) => {
       const id = req.params.id;
