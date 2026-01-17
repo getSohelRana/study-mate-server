@@ -188,6 +188,44 @@ async function run() {
       }
     });
 
+    // Sort : sort by experienceLevel
+    app.get("/sort", async (req, res) => {
+      const sortOrder = req.query.sort === "asc" ? 1 : -1; // default descending
+
+      // Aggregate use for string level priority handle
+      const result = await studentsCollection
+        .aggregate([
+          {
+            $addFields: {
+              // Numeric হলে 그대로 রাখবে, String হলে rank assign করবে
+              expRank: {
+                $switch: {
+                  branches: [
+                    {
+                      case: { $eq: ["$experienceLevel", "Beginner"] },
+                      then: 1,
+                    },
+                    {
+                      case: { $eq: ["$experienceLevel", "Intermediate"] },
+                      then: 2,
+                    },
+                    {
+                      case: { $eq: ["$experienceLevel", "Expert"] },
+                      then: 3,
+                    },
+                  ],
+                  default: "$experienceLevel", // if number
+                },
+              },
+            },
+          },
+          { $sort: { expRank: sortOrder } },
+        ])
+        .toArray();
+
+      res.send(result);
+    });
+
     //DELETE: delete student api
     app.delete("/students/:id", async (req, res) => {
       const id = req.params.id;
