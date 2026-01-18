@@ -197,7 +197,6 @@ async function run() {
         .aggregate([
           {
             $addFields: {
-              
               expRank: {
                 $switch: {
                   branches: [
@@ -226,18 +225,34 @@ async function run() {
       res.send(result);
     });
 
-    // FILTER : 
-    app.get("/filter" , async (req , res) => {
+    // FILTER :
+    app.get("/filter", async (req, res) => {
       const experienceLevel = req.query.experienceLevel;
-      let query = {}
-      if(experienceLevel){
-        query = {experienceLevel} // empty value value & selected value
+      let query = {};
+      if (experienceLevel) {
+        query = { experienceLevel }; // empty value value & selected value
         // query = {experienceLevel : experienceLevel} //just value
       }
       const result = await studentsCollection.find(query).toArray();
-      res.send(result)
-    })
-    
+      res.send(result);
+    });
+
+    // Get user requests partner by a email
+    app.get("/my-connection", async (req, res) => {
+      
+      const requested_by = req.query.requested_by;
+
+      if (!requested_by) {
+        return res.status(400).send({ message: "requested_by query required" });
+      }
+
+      const result = await partnerCountCollection
+        .find({ requested_by })
+        .toArray();
+
+      res.send(result);
+    });
+
     //DELETE: delete student api
     app.delete("/students/:id", async (req, res) => {
       const id = req.params.id;
