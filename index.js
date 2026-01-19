@@ -254,12 +254,7 @@ async function run() {
     });
 
     //DELETE: delete student api
-    app.delete("/students/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await studentsCollection.deleteOne(query);
-      res.send(result);
-    });
+    
 
     // DELETE : delete partner request
     app.delete("/partnerCounts/:id", async (req, res) => {
@@ -268,6 +263,14 @@ async function run() {
       const result = await partnerCountCollection.deleteOne(query);
       res.send(result);
     });
+
+    // get logged user by email
+    app.get("/my-profile", async (req, res) => {
+      const email = req.query.email;
+      const result = await studentsCollection.findOne({ email });
+      res.send(result);
+    });
+
 
     // UPDATE : update student api
     app.patch("/students/:id", async (req, res) => {
