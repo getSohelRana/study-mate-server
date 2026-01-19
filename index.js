@@ -271,22 +271,17 @@ async function run() {
       res.send(result);
     });
 
-
     // UPDATE : update student api
     app.patch("/students/:id", async (req, res) => {
-      const id = req.params.id;
-      const updatedStudent = req.body;
-      const query = { _id: new ObjectId(id) };
-      const update = {
-        $set: {
-          subject: updatedStudent.subject,
-          studyMode: updatedStudent.studyMode,
-          availabilityTime: updatedStudent.availabilityTime,
-          //some key & value goes here
-        },
-      };
-      const result = await studentsCollection.updateOne(query, update);
-      res.send(result);
+     const id = req.params.id;
+     const updatedData = req.body;
+
+     const result = await studentsCollection.updateOne(
+       { _id: new ObjectId(id) },
+       { $set: updatedData },
+     );
+
+     res.send(result);
     });
     // MongoDB connection check
     await client.db("admin").command({ ping: 1 });
