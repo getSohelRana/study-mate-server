@@ -76,11 +76,6 @@ async function run() {
 
     // GET : top rated students
     app.get("/top-rated-students", async (req, res) => {
-      // const email = req.query.email;
-      // const query = {}
-      // if(email) {
-      //   query.email = email
-      // }
       const projectFields = {
         name: 1,
         profileimage: 1,
@@ -89,7 +84,7 @@ async function run() {
         rating: 1,
       };
       const cursor = studentsCollection
-        .find()
+        .find({ rating: { $exists: true, $gt: 0 } }) // rating must be exist and > 0
         .sort({ rating: -1 })
         .limit(4)
         .project(projectFields);
